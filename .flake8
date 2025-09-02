@@ -1,0 +1,14 @@
+[flake8]
+max-line-length = 90
+extend-ignore = E203
+# per-file-ignores = settings*.py:E402,F403,F405
+
+exclude =
+    .git,
+    __pycache__,
+    .mypy_cache,
+    .tox,
+    .eggs,
+    *.egg,
+    .venv,
+    .env
