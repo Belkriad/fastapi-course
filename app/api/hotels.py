@@ -1,8 +1,10 @@
-import uvicorn
-from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel
+from typing import Any
+from fastapi import APIRouter, HTTPException, Query
 
-app = FastAPI()
+from app.api.dependencies import PaginationDep
+from app.schemas.hotels import HotelSchema, HotelUpdate
+
+router = APIRouter(prefix="/hotels", tags=["Отели"])
 hotels = [
     {"id": 1, "title": "Sochi", "name": "Сочи"},
     {"id": 2, "title": "Dubai", "name": "Дубай"},
@@ -19,31 +21,20 @@ hotels = [
 ]
 
 
-class HotelSchema(BaseModel):
-    title: str
-    name: str
-
-
-class HotelUpdate(BaseModel):
-    title: str | None = None
-    name: str | None = None
-
-
-def check_hotel_by_id(hotel_id: int, hotels: list[dict[str]]):
+def check_hotel_by_id(hotel_id: int, hotels: list[dict[str, Any]]):
     for hotel in hotels:
         if hotel["id"] == hotel_id:
             return
     raise HTTPException(status_code=404, detail="Id hotel not found")
 
 
-@app.get("/hotels")
+@router.get("/hotels")
 def get_hotels(
+    pagination: PaginationDep,
     id: int | None = Query(None, description="Айдишник"),
     title: str | None = Query(None, description="Название отеля"),
-    page: int = Query(1),
-    per_page: int = Query(3),
 ):
-    if per_page < 1 or page < 1:
+    if pagination.per_page < 1 or pagination.page < 1:
         raise HTTPException(
             status_code=422, detail="Negative pagination parameters are set"
         )
@@ -58,16 +49,20 @@ def get_hotels(
     count_hotels = len(hotels_)
     if count_hotels == 0:
         return []
-    num_rec = count_hotels if per_page > count_hotels else per_page
+    num_rec = count_hotels if pagination.per_page > count_hotels else pagination.per_page
     max_page = count_hotels // num_rec
     if max_page == 1:
         return hotels_
-    start = (page - 1) * num_rec if page <= max_page else (max_page - 1) * num_rec
-    end = page * num_rec if page <= max_page else max_page * num_rec
+    start = (
+        (pagination.page - 1) * num_rec
+        if pagination.page <= max_page
+        else (max_page - 1) * num_rec
+    )
+    end = pagination.page * num_rec if pagination.page <= max_page else max_page * num_rec
     return hotels_[start:end]
 
 
-@app.put("/hotels/{hotel_id}")
+@router.put("/hotels/{hotel_id}")
 def edit_hotel(hotel_id: int, payload: HotelSchema):
     check_hotel_by_id(hotel_id, hotels)
     for hotel in hotels:
@@ -77,7 +72,7 @@ def edit_hotel(hotel_id: int, payload: HotelSchema):
     return {"status": "ok"}
 
 
-@app.patch("/hotels/{hotel_id}")
+@router.patch("/hotels/{hotel_id}")
 def update_hotel(hotel_id: int, payload: HotelUpdate):
     if not payload.title and not payload.name:
         raise HTTPException(
@@ -91,7 +86,3 @@ def update_hotel(hotel_id: int, payload: HotelUpdate):
             if payload.name:
                 hotel["name"] = payload.name
     return {"status": "ok"}
-
-
-if __name__ == "__main__":
-    uvicorn.run("main:app", reload=True)
