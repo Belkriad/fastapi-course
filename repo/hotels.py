@@ -25,5 +25,4 @@ class HotelsRepository(BaseRepository):
             )
         query = query.limit(limit).offset(offset)
         result = await self.session.execute(query)
-
         return result.scalars().all()
