@@ -1,12 +1,13 @@
 from pydantic import BaseModel
 from sqlalchemy import delete, insert, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class BaseRepository:
     model = None
 
     def __init__(self, session):
-        self.session = session
+        self.session: AsyncSession = session
 
     async def get_all(self, *args, **kwargs):
         query = select(self.model)
@@ -18,13 +19,22 @@ class BaseRepository:
         result = await self.session.execute(query)
         return result.scalars().one_or_none()
 
+    async def get_one(self, id):
+        return await self.session.get(self.model, id)
+
     async def add(self, data: BaseModel):
         stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         hotel = await self.session.execute(stmt)
         return hotel.scalars().one()
 
-    async def edit(self, data: BaseModel, **filter_by) -> None:
-        stmt = update(self.model).filter_by(**filter_by).values(**data.model_dump())
+    async def edit(
+        self, data: BaseModel, exclude_unset: bool = False, **filter_by
+    ) -> None:
+        stmt = (
+            update(self.model)
+            .filter_by(**filter_by)
+            .values(**data.model_dump(exclude_unset=exclude_unset))
+        )
         await self.session.execute(stmt)
         return
 
