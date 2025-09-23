@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Body, Query
 
-from app.api.dependencies import PaginationDep
-from app.database import async_session_maker
-from app.schemas.hotels import HotelSchema
-from app.repo.hotels import HotelsRepository
+from src.api.dependencies import PaginationDep
+from src.database import async_session_maker
+from src.repo.hotels import HotelsRepository
+from src.schemas.hotels import HotelSchema
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
@@ -79,4 +79,3 @@ async def delete_hotel(hotel_id: int):
         await HotelsRepository(session).delete(id=hotel_id)
         await session.commit()
     return {"status": "OK"}
-

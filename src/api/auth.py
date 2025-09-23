@@ -1,10 +1,9 @@
 from fastapi import APIRouter
-
 from passlib.context import CryptContext
 
-from app.repo.users import UsersRepository
-from app.database import async_session_maker
-from app.schemas.users import UserRequestAdd, UserAdd
+from src.database import async_session_maker
+from src.repo.users import UsersRepository
+from src.schemas.users import UserAdd, UserRequestAdd
 
 router = APIRouter(prefix="/auth", tags=["Авторизация и аутентификация"])
 
@@ -14,7 +13,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router.post("/register")
 async def register_user(
-        data: UserRequestAdd,
+    data: UserRequestAdd,
 ):
     hashed_password = pwd_context.hash(data.password)
     new_user_data = UserAdd(email=data.email, hashed_password=hashed_password)
