@@ -10,7 +10,7 @@ from app.config import settings
 from app.database import Base
 from app.models.hotels import HotelsOrm # noqa
 from app.models.rooms import RoomsOrm  # noqa
-
+from app.models.users import UsersOrm  # noqa
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
