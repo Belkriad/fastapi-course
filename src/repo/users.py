@@ -1,8 +1,8 @@
-from sqlalchemy import select
 from pydantic import EmailStr
+from sqlalchemy import select
 
-from src.repo.base import BaseRepository
 from src.models.users import UsersOrm
+from src.repo.base import BaseRepository
 from src.schemas.users import User, UserWithHashedPassword
 
 
