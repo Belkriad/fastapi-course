@@ -8,7 +8,7 @@ from src.schemas.hotels import HotelSchema
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
 
-@router.get("/hotels")
+@router.get("")
 async def get_hotels(
     pagination: PaginationDep,
     location: str | None = Query(None, description="Локация"),
