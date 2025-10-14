@@ -1,7 +1,8 @@
-from sqlalchemy import func, select
+from datetime import date
 
 from src.models.rooms import RoomsOrm
 from src.repo.base import BaseRepository
+from src.repo.utils import rooms_ids_for_booking
 from src.schemas.rooms import Room
 
 
@@ -9,28 +10,11 @@ class RoomsRepository(BaseRepository):
     model = RoomsOrm
     schema = Room
 
-    async def get_all(
+    async def get_filtered_by_time(
         self,
-        price,
-        quantity,
-        title,
-        limit,
-        offset,
+        hotel_id,
+        date_from: date,
+        date_to: date,
     ):
-        query = select(RoomsOrm)
-        if price:
-            query = query.filter_by(price=price)
-        if quantity:
-            query = query.filter_by(quantity=quantity)
-        if title:
-            query = query.filter(
-                func.lower(RoomsOrm.title).contains(title.strip().lower())
-            )
-        query = query.limit(limit).offset(offset)
-        result = await self.session.execute(query)
-        return result.scalars().all()
-
-    async def get_price(self, room_id):
-        query = select(RoomsOrm.price).filter_by(id=room_id)
-        result = await self.session.execute(query)
-        return result.scalar_one()
+        rooms_ids_to_get = rooms_ids_for_booking(date_from, date_to, hotel_id)
+        return await self.get_filtered(RoomsOrm.id.in_(rooms_ids_to_get))
