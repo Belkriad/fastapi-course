@@ -28,7 +28,8 @@ class HotelsRepository(BaseRepository):
             .select_from(RoomsOrm)
             .filter(RoomsOrm.id.in_(rooms_ids_to_get))
         )
-        query = select(HotelsOrm.id.in_(hotels_ids_to_get))
+
+        query = select(HotelsOrm).filter(HotelsOrm.id.in_(hotels_ids_to_get))
         if location:
             query = query.filter(
                 func.lower(HotelsOrm.location).contains(location.strip().lower())
@@ -38,4 +39,9 @@ class HotelsRepository(BaseRepository):
                 func.lower(HotelsOrm.title).contains(title.strip().lower())
             )
         query = query.limit(limit).offset(offset)
-        return await self.get_filtered(query)
+        result = await self.session.execute(query)
+
+        return [
+            Hotel.model_validate(hotel, from_attributes=True)
+            for hotel in result.scalars().all()
+        ]

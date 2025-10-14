@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from src.config import settings
 from src.database import Base
 from src.models.bookings import BookingsOrm  # noqa
+from src.models.facilities import FacilitiesOrm  # noqa
 from src.models.hotels import HotelsOrm  # noqa
 from src.models.rooms import RoomsOrm  # noqa
 from src.models.users import UsersOrm  # noqa
