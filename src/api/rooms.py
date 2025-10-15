@@ -51,8 +51,7 @@ async def edit_room(
 ):
     _room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
     await db.rooms.edit(_room_data, id=room_id)
-    if room_data.facilities_ids:
-        await db.rooms_facilities.edit_facilities(room_data.facilities_ids, room_id)
+    await db.rooms_facilities.edit_facilities(room_data.facilities_ids, room_id)
     await db.commit()
     return {"status": "OK"}
 
